@@ -16,40 +16,6 @@ dpe_colors = {
     "G": "#ff0000",  # Rouge foncé
 }
 
-# Fonction pour générer des boutons colorés cliquables
-def colored_buttons():
-    selected_label = st.session_state.get("selected_label", None)
-    cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
-
-    for i, (label, color) in enumerate(dpe_colors.items()):
-        # Génération d'un bouton stylisé via Markdown
-        button_html = f"""
-            <button style="
-                background-color: {color};
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 15px 10px;
-                text-align: center;
-                font-size: 18px;
-                font-weight: bold;
-                cursor: pointer;
-                width: 100%;
-                box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            ">{label}</button>
-        """
-
-        # Injecter le bouton avec Markdown
-        with cols[i]:
-            if st.markdown(
-                f'<a href="?selected_label={label}" target="_self">{button_html}</a>',
-                unsafe_allow_html=True,
-            ):
-                st.session_state["selected_label"] = label
-
-    # Retourner l'étiquette sélectionnée
-    return st.session_state.get("selected_label", None)
-
 # Interface principale
 def main():
     st.title("🖌️ DPExplorer - Prioriser vos travaux 🛠️")
@@ -58,15 +24,45 @@ def main():
     # Entrée utilisateur pour le N°DPE
     n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
 
-    # Afficher les boutons colorés pour la sélection d'étiquette
+    # Sélection des étiquettes via boutons colorés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    selected_label = colored_buttons()
+
+    # Gestion de la sélection
+    if "selected_label" not in st.session_state:
+        st.session_state["selected_label"] = None
+
+    # Création des boutons dans des colonnes
+    cols = st.columns(len(dpe_colors))  # Une colonne par bouton
+    for i, (label, color) in enumerate(dpe_colors.items()):
+        button_key = f"button_{label}"  # Clé unique pour chaque bouton
+        with cols[i]:
+            # Injection de style via Markdown
+            st.markdown(
+                f"""
+                <style>
+                div[data-testid="stButton"] > button[title="{button_key}"] {{
+                    background-color: {color} !important;
+                    color: white !important;
+                    font-size: 16px !important;
+                    font-weight: bold !important;
+                    border-radius: 10px !important;
+                    height: 50px !important;
+                    width: 100% !important;
+                }}
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+            # Bouton cliquable
+            if st.button(label, key=button_key):
+                st.session_state["selected_label"] = label
 
     # Afficher l'étiquette sélectionnée
+    selected_label = st.session_state["selected_label"]
     if selected_label:
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton pour lancer la récupération
+    # Bouton pour confirmer et récupérer les priorités
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
