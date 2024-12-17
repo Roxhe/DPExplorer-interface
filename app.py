@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import fetch_user_data  # Import de la fonction
+from utils import fetch_user_data
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
