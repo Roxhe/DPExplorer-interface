@@ -1,60 +1,36 @@
 import streamlit as st
+from utils import fetch_user_data  # Import de la fonction
 
 # Configuration de la page
-st.set_page_config(
-    page_title="Mon Application Streamlit",
-    page_icon="📊",
-    layout="wide",
-)
+st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
 
-# Fonction principale
+# Interface principale
 def main():
-    # Titre et description
-    st.title("Mon Application Streamlit")
-    st.write("Bienvenue dans cette application Streamlit. Voici une démonstration simple.")
+    st.title("🖌️ DPExplorer - Prioriser vos travaux 🛠️")
+    st.write("Optimisez vos travaux pour atteindre une meilleure étiquette énergétique.")
 
-    # Barre latérale
-    st.sidebar.header("Navigation")
-    menu = st.sidebar.radio(
-        "Choisissez une section :",
-        ["Accueil", "Visualisation", "À propos"]
-    )
+    # Entrée utilisateur
+    n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
+    e_dpe_cible = st.text_input("🎯 Entrez votre Étiquette DPE Cible :", "")
 
-    # Logique des pages
-    if menu == "Accueil":
-        st.subheader("Accueil")
-        st.write("Cette section présente l'accueil de l'application.")
-        st.image("https://source.unsplash.com/random/800x400", caption="Exemple d'image")
+    # Bouton pour récupérer les données
+    if st.button("🔍 Connaitre vos priorités de travaux !"):
+        if n_dpe and e_dpe_cible:
+            st.info("🔄 Récupération des priorités de travaux...")
+            with st.spinner("Analyse en cours..."):
+                # Appel à la fonction importée
+                data_df = fetch_user_data(n_dpe)
 
-    elif menu == "Visualisation":
-        st.subheader("Visualisation des données")
-        st.write("Affichez des graphiques ou des tableaux de données ici.")
+                # Affichage des résultats
+                if not data_df.empty:
+                    st.subheader("🔍 Résultats trouvés :")
+                    st.dataframe(data_df)
 
-        # Exemple de graphique
-        import pandas as pd
-        import matplotlib.pyplot as plt
+                    st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {e_dpe_cible}")
+                else:
+                    st.warning("Aucune donnée trouvée pour le N°DPE fourni.")
+        else:
+            st.warning("Veuillez remplir les deux champs pour continuer.")
 
-        # Exemple de données
-        data = pd.DataFrame({
-            'x': range(1, 11),
-            'y': [x**2 for x in range(1, 11)]
-        })
-
-        st.write("Voici un exemple de graphique :")
-        fig, ax = plt.subplots()
-        ax.plot(data['x'], data['y'], marker='o', linestyle='-')
-        ax.set_title("Exemple de graphique")
-        ax.set_xlabel("Axe X")
-        ax.set_ylabel("Axe Y")
-        st.pyplot(fig)
-
-    elif menu == "À propos":
-        st.subheader("À propos")
-        st.write("""
-        Cette application Streamlit a été créée pour démontrer les fonctionnalités de base.
-        """)
-        st.info("Auteur : Votre Nom")
-
-# Point d'entrée
 if __name__ == "__main__":
     main()
