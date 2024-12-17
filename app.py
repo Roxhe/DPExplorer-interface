@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data
+from utils import fetch_user_data  # Import de ta fonction d'API
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -27,34 +27,45 @@ def main():
     # Afficher les étiquettes sous forme de boutons colorés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
 
-    # Utiliser des colonnes pour afficher les boutons colorés cliquables
     selected_label = st.session_state.get("selected_label", None)
-    cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
 
+    # Utilisation des colonnes pour aligner les boutons
+    cols = st.columns(len(dpe_colors))  # Une colonne par bouton coloré
+
+    # Création des boutons dynamiquement
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
             if st.button(
-                label=label,
-                key=f"btn_{label}",
-                help=f"Selectionner l'étiquette {label}",
-                style=f"""
-                background-color: {color};
-                color: white;
-                text-align: center;
-                font-size: 24px;
-                border-radius: 10px;
-                padding: 10px;
-                cursor: pointer;
-                """
+                label,
+                key=label,
+                help=f"Sélectionnez l'étiquette {label}",
+                use_container_width=True,
             ):
-                st.session_state["selected_label"] = label
+                st.session_state["selected_label"] = label  # Enregistrer l'étiquette sélectionnée
                 selected_label = label
+
+            # Afficher les couleurs de fond avec markdown pour style visuel
+            st.markdown(
+                f"""
+                <style>
+                div[data-testid="stButton"] > button {{
+                    background-color: {color};
+                    color: white;
+                    font-size: 16px;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    height: 50px;
+                }}
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
 
     # Confirmation de la sélection
     if selected_label:
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton pour lancer la récupération
+    # Bouton pour lancer la récupération des priorités
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
