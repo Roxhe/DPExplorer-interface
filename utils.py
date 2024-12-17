@@ -40,24 +40,25 @@ columns_to_encode = get_columns_to_encode()
 
 
 def fetch_user_data(n_dpe):
-
     params = {
-            "size": 1,  # Nombre de lignes à récupérer
-            "q_fields": "N°DPE",  # Champ sur lequel filtrer
-            "q": n_dpe,  # Valeur du filtre ()
-            "select": ",".join(columns_to_encode)  # Colonnes à récupérer
-        }
-
+        "size": 1,  # Nombre de lignes à récupérer
+        "q_fields": "N°DPE",  # Champ sur lequel filtrer
+        "q": n_dpe,  # Valeur du filtre
+        "select": ",".join(columns_to_encode)  # Colonnes à récupérer
+    }
 
     custom_request = requests.Request("GET", base_url, params=params).prepare()
     with requests.Session() as session:
-            response = session.send(custom_request)
+        response = session.send(custom_request)
 
     if response.status_code == 200:
         print(f"Récupération réussie pour N°DPE - {n_dpe}")
-        data = response.json()
-        data = data.get("results", [])
+        data = response.json().get("results", [])
+        if data:  # Si des données sont présentes
+            return pd.DataFrame(data)  # Retourne un DataFrame
+        else:
+            print("Aucune donnée trouvée pour ce N°DPE.")
+            return pd.DataFrame()  # Retourne un DataFrame vide
     else:
         print(f"Erreur {response.status_code} pour N°DPE - {n_dpe}")
-
-    return data
+        return pd.DataFrame()  # Retourne un DataFrame vide en cas d'erreur
