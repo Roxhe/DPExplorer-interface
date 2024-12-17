@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data  # Import de ta fonction d'API
+from utils import fetch_user_data
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -28,30 +28,36 @@ def main():
     if "selected_label" not in st.session_state:
         st.session_state["selected_label"] = None
 
-    # Affichage des boutons colorés
+    # Sélection des étiquettes via des boutons invisibles superposés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    cols = st.columns(len(dpe_colors))  # Création des colonnes pour aligner les boutons
+    cols = st.columns(len(dpe_colors))  # Créer des colonnes pour aligner les boutons
 
+    # Afficher les cadres colorés et superposer les boutons
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            # Bouton coloré avec style natif
-            button_style = f"""
-                <style>
-                div[data-testid="stButton"] > button {{
-                    background-color: {color} !important;
-                    color: white !important;
-                    font-size: 18px;
+            # Cadre coloré
+            st.markdown(
+                f"""
+                <div style="
+                    background-color: {color};
+                    color: white;
+                    text-align: center;
+                    font-size: 20px;
                     font-weight: bold;
-                    border-radius: 8px;
-                    height: 50px;
+                    border-radius: 10px;
+                    padding: 15px;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
                     width: 100%;
-                    cursor: pointer;
-                }}
-                </style>
-            """
-            st.markdown(button_style, unsafe_allow_html=True)
+                ">
+                    {label}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-            if st.button(label, key=f"button_{label}"):
+            # Bouton Streamlit invisible, superposé au cadre
+            button_clicked = st.button(" ", key=label, help=f"Sélectionner {label}")
+            if button_clicked:
                 st.session_state["selected_label"] = label
 
     # Afficher l'étiquette sélectionnée
