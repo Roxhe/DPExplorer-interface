@@ -3,7 +3,6 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder
 from utils import fetch_user_data  # Import de ta fonction d'API
 
-# Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
 
 # Code couleur des étiquettes DPE
