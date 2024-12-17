@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data  # Import de ta fonction d'API
+from utils import fetch_user_data
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -27,26 +27,25 @@ def main():
     # Afficher les étiquettes sous forme de boutons colorés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
 
-    # Utiliser des colonnes pour afficher les cases colorées cliquables
+    # Utiliser des colonnes pour afficher les boutons colorés cliquables
     selected_label = st.session_state.get("selected_label", None)
     cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
 
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            # Utiliser Markdown pour styliser chaque bouton
-            if st.markdown(
-                f"""
-                <div style='background-color:{color};
-                            color:white;
-                            text-align:center;
-                            font-size:24px;
-                            border-radius:10px;
-                            padding:10px;
-                            cursor:pointer;'>
-                    {label}
-                </div>
-                """,
-                unsafe_allow_html=True
+            if st.button(
+                label=label,
+                key=f"btn_{label}",
+                help=f"Selectionner l'étiquette {label}",
+                style=f"""
+                background-color: {color};
+                color: white;
+                text-align: center;
+                font-size: 24px;
+                border-radius: 10px;
+                padding: 10px;
+                cursor: pointer;
+                """
             ):
                 st.session_state["selected_label"] = label
                 selected_label = label
