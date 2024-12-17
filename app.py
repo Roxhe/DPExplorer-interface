@@ -5,7 +5,7 @@ from utils import fetch_user_data  # Import de ta fonction existante
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
 
-# Couleurs DPE pour les étiquettes
+# Code couleur des étiquettes DPE
 dpe_colors = {
     "A": "#009933",  # Vert foncé
     "B": "#66cc33",  # Vert clair
@@ -16,21 +16,26 @@ dpe_colors = {
     "G": "#990000",  # Rouge foncé
 }
 
-# Fonction pour créer le tableau des étiquettes DPE
-def create_dpe_table():
-    dpe_data = pd.DataFrame({
-        "Étiquette": ["G", "F", "E", "D", "C", "B", "A"],
-        "Description": [
-            "Très mauvaise performance",
-            "Mauvaise performance",
-            "Performance médiocre",
-            "Performance moyenne",
-            "Bonne performance",
-            "Très bonne performance",
-            "Excellente performance"
-        ]
-    })
-    return dpe_data
+# Fonction pour afficher les étiquettes sous forme de tableau visuel
+def display_dpe_table():
+    st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
+
+    # Créer une ligne de colonnes pour afficher les étiquettes
+    cols = st.columns(7)
+
+    # Retourner la sélection de l'utilisateur
+    selected_label = None
+    for i, label in enumerate(dpe_colors.keys()):
+        with cols[i]:
+            st.markdown(
+                f"<div style='background-color:{dpe_colors[label]};"
+                f" color:white; border-radius:8px; text-align:center; padding:10px;'>"
+                f"<b>{label}</b></div>",
+                unsafe_allow_html=True
+            )
+            if st.button(f"🔘 {label}"):
+                selected_label = label
+    return selected_label
 
 # Interface principale
 def main():
@@ -40,38 +45,27 @@ def main():
     # Entrée utilisateur pour le N°DPE
     n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
 
-    # Sélection de l'étiquette cible via tableau interactif
-    st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    dpe_table = create_dpe_table()
-
-    # Affichage du tableau avec un style
-    styled_table = dpe_table.style.applymap(lambda _: "color: white;", subset="Étiquette")
-    for label, color in dpe_colors.items():
-        styled_table = styled_table.applymap(
-            lambda v: f"background-color: {color}; color: white;" if v == label else "",
-            subset="Étiquette"
-        )
-
-    # Sélecteur d'étiquette (dans une liste)
-    e_dpe_cible = st.radio("Choisissez une étiquette cible :", options=dpe_table["Étiquette"])
+    # Afficher le tableau des étiquettes
+    e_dpe_cible = display_dpe_table()
 
     # Bouton pour lancer la récupération
-    if st.button("🔍 Connaitre vos priorités de travaux !"):
-        if n_dpe and e_dpe_cible:
-            st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
-            with st.spinner("Analyse en cours..."):
-                # Appel à la fonction pour récupérer les données
-                data_df = fetch_user_data(n_dpe)
+    if e_dpe_cible and n_dpe:
+        st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
+        with st.spinner("Analyse en cours..."):
+            # Appel à la fonction pour récupérer les données
+            data_df = fetch_user_data(n_dpe)
 
-                # Affichage des résultats
-                if not data_df.empty:
-                    st.subheader("🔍 Résultats trouvés :")
-                    st.dataframe(data_df)
-                    st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {e_dpe_cible}")
-                else:
-                    st.warning("Aucune donnée trouvée pour le N°DPE fourni.")
-        else:
-            st.warning("Veuillez remplir le N°DPE et sélectionner une étiquette cible.")
+            # Affichage des résultats
+            if not data_df.empty:
+                st.subheader("🔍 Résultats trouvés :")
+                st.dataframe(data_df)
+                st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {e_dpe_cible}")
+            else:
+                st.warning("Aucune donnée trouvée pour le N°DPE fourni.")
+    elif not n_dpe:
+        st.warning("Veuillez entrer votre N°DPE pour continuer.")
+    elif not e_dpe_cible:
+        st.info("Cliquez sur une étiquette pour la sélectionner.")
 
 if __name__ == "__main__":
     main()
