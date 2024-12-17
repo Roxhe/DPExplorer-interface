@@ -36,28 +36,46 @@ def main():
 
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            # Création d'un cadre coloré avec l'étiquette
+            # Positionnement absolu pour superposer les boutons invisibles
             st.markdown(
                 f"""
                 <div style="
-                    background-color: {color};
-                    color: white;
-                    text-align: center;
-                    font-size: 20px;
-                    font-weight: bold;
-                    border-radius: 10px;
-                    padding: 15px;
-                    cursor: pointer;
-                    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-                ">
-                    {label}
+                    position: relative;
+                    width: 100%;
+                    text-align: center;">
+                    <div style="
+                        background-color: {color};
+                        color: white;
+                        text-align: center;
+                        font-size: 20px;
+                        font-weight: bold;
+                        border-radius: 10px;
+                        padding: 15px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                        position: relative;">
+                        {label}
+                    </div>
+                    <div style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;">
+                        <form action="" method="get">
+                            <input type="submit" name="button_{label}" value="" style="
+                                opacity: 0;
+                                width: 100%;
+                                height: 100%;
+                                cursor: pointer;">
+                        </form>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            # Bouton invisible pour capturer le clic
-            if st.button(" ", key=f"button_{label}"):
+            # Détecter si le bouton a été cliqué
+            if f"button_{label}" in st.query_params:
                 st.session_state["selected_label"] = label
 
     # Afficher l'étiquette sélectionnée
