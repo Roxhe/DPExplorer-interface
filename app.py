@@ -24,42 +24,24 @@ def main():
     # Entrée utilisateur pour le N°DPE
     n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
 
-    # Sélection d'une étiquette cible via cases colorées cliquables
+    # Afficher les étiquettes sous forme de boutons colorés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-
-    # Colonne pour afficher les étiquettes
     selected_label = None
-    cols = st.columns(len(dpe_colors))  # Création d'une colonne par étiquette
 
+    # Création des boutons cliquables dans des colonnes
+    cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            # Création de boutons visuels avec HTML et CSS
-            button_clicked = st.markdown(
-                f"""
-                <div style='
-                    display: inline-block;
-                    background-color: {color};
-                    color: white;
-                    text-align: center;
-                    border-radius: 10px;
-                    padding: 15px;
-                    font-weight: bold;
-                    font-size: 16px;
-                    cursor: pointer;
-                    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);'
-                    onclick="window.location.href='?label={label}'">
-                    {label}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            if st.button(label, key=label):
+                selected_label = label  # Stocker l'étiquette sélectionnée
+                st.session_state["selected_label"] = label
 
-    # Affichage de l'étiquette sélectionnée
-    selected_label = st.query_params.get("label")
-    if selected_label:
+    # Récupérer la sélection depuis session_state
+    if "selected_label" in st.session_state:
+        selected_label = st.session_state["selected_label"]
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton pour lancer la récupération
+    # Bouton de confirmation pour lancer la récupération
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
