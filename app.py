@@ -29,43 +29,37 @@ def main():
 
     selected_label = st.session_state.get("selected_label", None)
 
-    # Utilisation des colonnes pour aligner les boutons
-    cols = st.columns(len(dpe_colors))  # Une colonne par bouton coloré
+    # Utilisation des colonnes pour afficher les boutons colorés
+    cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
 
-    # Création des boutons dynamiquement
     for i, (label, color) in enumerate(dpe_colors.items()):
+        # Bouton avec un style appliqué
         with cols[i]:
-            if st.button(
-                label,
-                key=label,
-                help=f"Sélectionnez l'étiquette {label}",
-                use_container_width=True,
-            ):
-                st.session_state["selected_label"] = label  # Enregistrer l'étiquette sélectionnée
-                selected_label = label
+            button_html = f"""
+            <style>
+            div[data-testid="stButton"] > button {{
+                background-color: {color} !important;
+                color: white !important;
+                font-size: 18px !important;
+                font-weight: bold !important;
+                border-radius: 10px !important;
+                height: 50px !important;
+                width: 100% !important;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.3) !important;
+            }}
+            </style>
+            """
+            st.markdown(button_html, unsafe_allow_html=True)
 
-            # Afficher les couleurs de fond avec markdown pour style visuel
-            st.markdown(
-                f"""
-                <style>
-                div[data-testid="stButton"] > button {{
-                    background-color: {color};
-                    color: white;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border-radius: 8px;
-                    height: 50px;
-                }}
-                </style>
-                """,
-                unsafe_allow_html=True,
-            )
+            if st.button(label, key=label):
+                st.session_state["selected_label"] = label
+                selected_label = label
 
     # Confirmation de la sélection
     if selected_label:
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton pour lancer la récupération des priorités
+    # Bouton de confirmation pour lancer la récupération
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
