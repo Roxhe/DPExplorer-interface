@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data  # Import de ta fonction d'API
+from utils import fetch_user_data
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -32,8 +32,8 @@ def main():
     cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            if st.button(label, key=label):
-                selected_label = label  # Stocker l'étiquette sélectionnée
+            if st.button(f"<span style='color:{color}; font-size:24px;'>{label}</span>", key=label, use_container_width=True, help=f"Sélectionner l'étiquette {label}"):
+                selected_label = label
                 st.session_state["selected_label"] = label
 
     # Récupérer la sélection depuis session_state
