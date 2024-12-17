@@ -1,5 +1,5 @@
 import requests
-import os
+import pandas as pd
 
 from api_params import *
 
