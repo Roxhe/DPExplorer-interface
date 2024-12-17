@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data
+from st_aggrid import AgGrid, GridOptionsBuilder
+from utils import fetch_user_data  # Import de ta fonction d'API
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -16,6 +17,11 @@ dpe_colors = {
     "G": "#ff0000",  # Rouge foncé
 }
 
+# Fonction pour construire les données avec couleurs pour AgGrid
+def build_dpe_table():
+    data = [{"Étiquette": label, "Couleur": color} for label, color in dpe_colors.items()]
+    return pd.DataFrame(data)
+
 # Interface principale
 def main():
     st.title("🖌️ DPExplorer - Prioriser vos travaux 🛠️")
@@ -28,44 +34,37 @@ def main():
     if "selected_label" not in st.session_state:
         st.session_state["selected_label"] = None
 
-    # Sélection des étiquettes via des boutons invisibles superposés
+    # Affichage des étiquettes DPE dans AgGrid
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    cols = st.columns(len(dpe_colors))  # Créer des colonnes pour aligner les boutons
+    dpe_df = build_dpe_table()
 
-    # Afficher les cadres colorés et superposer les boutons
-    for i, (label, color) in enumerate(dpe_colors.items()):
-        with cols[i]:
-            # Cadre coloré
-            st.markdown(
-                f"""
-                <div style="
-                    background-color: {color};
-                    color: white;
-                    text-align: center;
-                    font-size: 20px;
-                    font-weight: bold;
-                    border-radius: 10px;
-                    padding: 15px;
-                    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-                    width: 100%;
-                ">
-                    {label}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    # Configuration des options AgGrid
+    gb = GridOptionsBuilder.from_dataframe(dpe_df)
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+    gb.configure_column("Étiquette", cellStyle=lambda params: f"background-color: {params.data['Couleur']}; color: white; text-align: center; font-size: 16px; font-weight: bold;")
+    grid_options = gb.build()
 
-            # Bouton Streamlit invisible, superposé au cadre
-            button_clicked = st.button(" ", key=label, help=f"Sélectionner {label}")
-            if button_clicked:
-                st.session_state["selected_label"] = label
+    # Affichage de la grille interactive
+    grid_response = AgGrid(
+        dpe_df,
+        gridOptions=grid_options,
+        height=200,
+        fit_columns_on_grid_load=True,
+        allow_unsafe_jscode=True,  # Permet le JavaScript pour styliser les cellules
+        theme="streamlit",  # Utilise le thème Streamlit
+    )
+
+    # Capture de la sélection
+    selected_rows = grid_response["selected_rows"]
+    if selected_rows:
+        st.session_state["selected_label"] = selected_rows[0]["Étiquette"]
 
     # Afficher l'étiquette sélectionnée
     selected_label = st.session_state["selected_label"]
     if selected_label:
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton pour lancer la récupération
+    # Bouton pour confirmer et récupérer les priorités
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
