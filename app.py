@@ -24,37 +24,40 @@ def main():
     # Entrée utilisateur pour le N°DPE
     n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
 
-    # Sélection des étiquettes via boutons colorés
+    # Sélection des étiquettes via des cadres interactifs
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
 
-    # Gestion de la sélection
+    # Initialiser l'état pour conserver l'étiquette sélectionnée
     if "selected_label" not in st.session_state:
         st.session_state["selected_label"] = None
 
-    # Création des boutons dans des colonnes
-    cols = st.columns(len(dpe_colors))  # Une colonne par bouton
+    # Création des colonnes pour aligner les cadres
+    cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
+
     for i, (label, color) in enumerate(dpe_colors.items()):
-        button_key = f"button_{label}"  # Clé unique pour chaque bouton
         with cols[i]:
-            # Injection de style via Markdown
+            # Création d'un cadre coloré avec l'étiquette
             st.markdown(
                 f"""
-                <style>
-                div[data-testid="stButton"] > button[title="{button_key}"] {{
-                    background-color: {color} !important;
-                    color: white !important;
-                    font-size: 16px !important;
-                    font-weight: bold !important;
-                    border-radius: 10px !important;
-                    height: 50px !important;
-                    width: 100% !important;
-                }}
-                </style>
+                <div style="
+                    background-color: {color};
+                    color: white;
+                    text-align: center;
+                    font-size: 20px;
+                    font-weight: bold;
+                    border-radius: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                ">
+                    {label}
+                </div>
                 """,
                 unsafe_allow_html=True,
             )
-            # Bouton cliquable
-            if st.button(label, key=button_key):
+
+            # Bouton invisible pour capturer le clic
+            if st.button(" ", key=f"button_{label}"):
                 st.session_state["selected_label"] = label
 
     # Afficher l'étiquette sélectionnée
