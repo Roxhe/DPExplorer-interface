@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data
+from utils import fetch_user_data  # Import de ta fonction d'API
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
@@ -26,22 +26,36 @@ def main():
 
     # Afficher les étiquettes sous forme de boutons colorés
     st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    selected_label = None
 
-    # Création des boutons cliquables dans des colonnes
+    # Utiliser des colonnes pour afficher les cases colorées cliquables
+    selected_label = st.session_state.get("selected_label", None)
     cols = st.columns(len(dpe_colors))  # Une colonne par étiquette
+
     for i, (label, color) in enumerate(dpe_colors.items()):
         with cols[i]:
-            if st.button(f"<span style='color:{color}; font-size:24px;'>{label}</span>", key=label, use_container_width=True, help=f"Sélectionner l'étiquette {label}"):
-                selected_label = label
+            # Utiliser Markdown pour styliser chaque bouton
+            if st.markdown(
+                f"""
+                <div style='background-color:{color};
+                            color:white;
+                            text-align:center;
+                            font-size:24px;
+                            border-radius:10px;
+                            padding:10px;
+                            cursor:pointer;'>
+                    {label}
+                </div>
+                """,
+                unsafe_allow_html=True
+            ):
                 st.session_state["selected_label"] = label
+                selected_label = label
 
-    # Récupérer la sélection depuis session_state
-    if "selected_label" in st.session_state:
-        selected_label = st.session_state["selected_label"]
+    # Confirmation de la sélection
+    if selected_label:
         st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
 
-    # Bouton de confirmation pour lancer la récupération
+    # Bouton pour lancer la récupération
     if st.button("🔍 Connaitre vos priorités de travaux !"):
         if n_dpe and selected_label:
             st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
