@@ -1,85 +1,112 @@
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
-from utils import fetch_user_data  # Import de ta fonction d'API
+from utils import fetch_user_data
 
-st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="centered")
+# Configuration de la page
+st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="wide")
 
-# Code couleur des étiquettes DPE
+# Code couleur des étiquettes DPE (ordre inversé pour G -> A)
 dpe_colors = {
-    "A": "#319a31",  # Vert foncé
-    "B": "#33cc33",  # Vert
-    "C": "#ccff33",  # Vert Jaune
-    "D": "#ffff00",  # Jaune
-    "E": "#ffcc00",  # Orange Jaune
-    "F": "#ff9a33",  # Orange
     "G": "#ff0000",  # Rouge foncé
+    "F": "#ff9a33",  # Orange
+    "E": "#ffcc00",  # Orange Jaune
+    "D": "#ffff00",  # Jaune
+    "C": "#ccff33",  # Vert Jaune
+    "B": "#33cc33",  # Vert
+    "A": "#319a31",  # Vert foncé
 }
 
-# Fonction pour construire les données avec couleurs pour AgGrid
-def build_dpe_table():
-    data = [{"Étiquette": label, "Couleur": color} for label, color in dpe_colors.items()]
-    return pd.DataFrame(data)
+# Ordre des étiquettes pour comparaison (de G vers A)
+dpe_order = list(dpe_colors.keys())
 
-# Interface principale
+# CSS global pour les étiquettes stylisées
+st.markdown(
+    """
+    <style>
+        .dpe-button {
+            color: beige;
+            text-shadow: -1px -1px 0 #000,
+                         1px -1px 0 #000,
+                         -1px 1px 0 #000,
+                         1px 1px 0 #000;  /* Bordure noire autour des lettres */
+            font-size: 28px; /* Taille agrandie */
+            font-weight: bold; /* Texte en gras */
+            text-align: center;
+            border-radius: 10px;
+            padding: 15px;
+            width: 100%;
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Fonction principale
 def main():
-    st.title("🖌️ DPExplorer - Prioriser vos travaux 🛠️")
+    st.title("🖌️ DPExplorer 🛠️")
     st.write("Optimisez vos travaux pour atteindre une meilleure étiquette énergétique.")
 
-    # Entrée utilisateur pour le N°DPE
-    n_dpe = st.text_input("📄 Entrez votre N°DPE :", "")
+    # Initialiser l'état pour gérer le N°DPE
+    if "n_dpe_valid" not in st.session_state:
+        st.session_state["n_dpe_valid"] = False
+    if "etiquette_dpe" not in st.session_state:
+        st.session_state["etiquette_dpe"] = None
 
-    # Initialiser l'état pour conserver l'étiquette sélectionnée
-    if "selected_label" not in st.session_state:
-        st.session_state["selected_label"] = None
+    # Étape 1 : Entrée utilisateur pour le N°DPE avec bouton de validation
+    if not st.session_state["n_dpe_valid"]:
+        n_dpe = st.text_input("📄 Entrez votre N°DPE :", key="n_dpe_input")
+        if st.button("✅ Valider le N°DPE"):
+            if n_dpe:
+                st.info(f"🔄 Récupération des informations pour le N°DPE {n_dpe}...")
+                with st.spinner("Analyse en cours..."):
+                    # Appel à la fonction pour récupérer les données
+                    data_df = fetch_user_data(n_dpe)
 
-    # Affichage des étiquettes DPE dans AgGrid
-    st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
-    dpe_df = build_dpe_table()
+                    if not data_df.empty:
+                        # Récupérer l'étiquette actuelle
+                        etiquette_dpe = data_df["Etiquette_DPE"].iloc[0] if "Etiquette_DPE" in data_df.columns else None
 
-    # Configuration des options AgGrid
-    gb = GridOptionsBuilder.from_dataframe(dpe_df)
-    gb.configure_selection(selection_mode="single", use_checkbox=False)
-    gb.configure_column("Étiquette", cellStyle=lambda params: f"background-color: {params.data['Couleur']}; color: white; text-align: center; font-size: 16px; font-weight: bold;")
-    grid_options = gb.build()
+                        if etiquette_dpe in dpe_order:
+                            st.session_state["n_dpe_valid"] = True
+                            st.session_state["etiquette_dpe"] = etiquette_dpe
+                            st.session_state["possible_labels"] = dpe_order[dpe_order.index(etiquette_dpe) + 1:]
+                        else:
+                            st.error("⚠️ L'étiquette DPE actuelle est invalide.")
+                    else:
+                        st.error("⚠️ Aucune donnée trouvée pour le N°DPE fourni.")
+            else:
+                st.warning("Veuillez entrer un N°DPE valide.")
 
-    # Affichage de la grille interactive
-    grid_response = AgGrid(
-        dpe_df,
-        gridOptions=grid_options,
-        height=200,
-        fit_columns_on_grid_load=True,
-        allow_unsafe_jscode=True,  # Permet le JavaScript pour styliser les cellules
-        theme="streamlit",  # Utilise le thème Streamlit
-    )
+    # Étape 2 : Afficher les étiquettes si N°DPE validé
+    if st.session_state["n_dpe_valid"]:
+        etiquette_dpe = st.session_state["etiquette_dpe"]
+        possible_labels = st.session_state["possible_labels"]
 
-    # Capture de la sélection
-    selected_rows = grid_response["selected_rows"]
-    if selected_rows:
-        st.session_state["selected_label"] = selected_rows[0]["Étiquette"]
+        # Afficher l'étiquette actuelle
+        st.subheader("📊 Votre étiquette actuelle :")
+        st.markdown(
+            f"<div class='dpe-button' style='background-color: {dpe_colors[etiquette_dpe]};'>{etiquette_dpe}</div>",
+            unsafe_allow_html=True
+        )
 
-    # Afficher l'étiquette sélectionnée
-    selected_label = st.session_state["selected_label"]
-    if selected_label:
-        st.success(f"✅ Vous avez sélectionné l'étiquette : {selected_label}")
+        # Sélection des étiquettes cibles
+        st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
+        selected_label = st.radio(
+            "Choisissez une étiquette cible :",
+            options=possible_labels,
+            horizontal=True,
+            key="dpe_radio"
+        )
 
-    # Bouton pour confirmer et récupérer les priorités
-    if st.button("🔍 Connaitre vos priorités de travaux !"):
-        if n_dpe and selected_label:
-            st.info(f"🔄 Récupération des priorités de travaux pour N°DPE {n_dpe}...")
-            with st.spinner("Analyse en cours..."):
-                # Appel à la fonction pour récupérer les données
-                data_df = fetch_user_data(n_dpe)
-
-                # Affichage des résultats
-                if not data_df.empty:
-                    st.subheader("🔍 Résultats trouvés :")
-                    st.dataframe(data_df)
-                    st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {selected_label}")
-                else:
-                    st.warning("Aucune donnée trouvée pour le N°DPE fourni.")
-        else:
-            st.warning("Veuillez entrer votre N°DPE et sélectionner une étiquette cible.")
+        # Afficher l'étiquette cible sélectionnée
+        if selected_label:
+            st.markdown(
+                f"<div class='dpe-button' style='background-color: {dpe_colors[selected_label]};'>{selected_label}</div>",
+                unsafe_allow_html=True
+            )
+            st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {selected_label}")
 
 if __name__ == "__main__":
     main()
