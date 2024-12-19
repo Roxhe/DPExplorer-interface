@@ -96,11 +96,16 @@ def main():
 
         # Sélection des étiquettes cibles
         st.subheader("🎯 Sélectionnez votre Étiquette DPE Cible")
+
+        # Trouver l'index de "A" dans possible_labels (ou 0 si "A" n'est pas présent)
+        default_index = possible_labels.index("A") if "A" in possible_labels else 0
+
         selected_label = st.radio(
             "Choisissez une étiquette cible :",
             options=possible_labels,
             horizontal=True,
-            key="dpe_radio"
+            key="dpe_radio",
+            index=default_index  # Par défaut, présélectionner "A"
         )
 
         # Stocker la note cible dans l'état de session
