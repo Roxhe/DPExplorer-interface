@@ -113,17 +113,43 @@ def main():
             st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {selected_label}")
 
         # Afficher les valeurs stockées pour confirmation
-        st.write("**Données disponibles pour la suite :**")
+        st.write("**Vos infos:**")
         st.write(f"- **N°DPE :** {st.session_state['n_dpe']}")
         st.write(f"- **Note cible :** {st.session_state['note_cible']}")
+
 
         # Lancer le processus final
         if st.button("🛠️ Lancer le processus final"):
             with st.spinner("Traitement en cours..."):
                 results = final_process(st.session_state["n_dpe"], st.session_state["note_cible"])
                 st.success("🎉 Analyse terminée ! Voici vos résultats :")
+
+                # Section des résultats textuels
                 for result in results:
-                    st.write(f"- {result}")
+                    if isinstance(result, list):  # Si c'est une liste d'étiquettes
+                        st.subheader("🔹 Étiquette atteinte en améliorant seulement les isolations :")
+                        for label in result:
+                            if label in dpe_colors:
+                                st.markdown(
+                                    f"<div class='dpe-button' style='background-color: {dpe_colors[label]};'>{label}</div>",
+                                    unsafe_allow_html=True
+                                )
+                    else:  # Si c'est un texte descriptif
+                        st.markdown(
+                            f"""
+                            <div style='
+                                background-color: #f8f9fa;
+                                padding: 10px;
+                                border-left: 5px solid #007bff;
+                                margin-bottom: 10px;
+                                border-radius: 5px;
+                                '>
+                                <strong style="color: #007bff;">💡 {result}</strong>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
 
 if __name__ == "__main__":
     main()
