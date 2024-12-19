@@ -1,6 +1,5 @@
 import streamlit as st
-import pandas as pd
-from utils import fetch_user_data, final_process
+from utils import fetch_user_data, api_final_process
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="wide")
@@ -122,24 +121,16 @@ def main():
         st.write(f"- **N°DPE :** {st.session_state['n_dpe']}")
         st.write(f"- **Note cible :** {st.session_state['note_cible']}")
 
-
         # Lancer le processus final
         if st.button("🛠️ Lancer le processus final"):
             with st.spinner("Traitement en cours..."):
-                results = final_process(st.session_state["n_dpe"], st.session_state["note_cible"])
+                results = api_final_process(st.session_state["n_dpe"], st.session_state["note_cible"])
                 st.success("🎉 Analyse terminée ! Voici vos résultats :")
 
                 # Section des résultats textuels
-                for result in results:
-                    if isinstance(result, list):  # Si c'est une liste d'étiquettes
-                        st.subheader("🔹 Étiquette atteinte en améliorant seulement les isolations :")
-                        for label in result:
-                            if label in dpe_colors:
-                                st.markdown(
-                                    f"<div class='dpe-button' style='background-color: {dpe_colors[label]};'>{label}</div>",
-                                    unsafe_allow_html=True
-                                )
-                    else:  # Si c'est un texte descriptif
+                if results:
+                    # Afficher les messages textuels (tout sauf le dernier élément)
+                    for result in results[:-1]:
                         st.markdown(
                             f"""
                             <div style='
@@ -154,6 +145,16 @@ def main():
                             """,
                             unsafe_allow_html=True
                         )
+
+                    # Afficher l'étiquette atteinte (dernier élément de la liste)
+                    label_reached = results[-1]  # Dernier élément de la liste
+                    if label_reached in dpe_colors:
+                        st.subheader("🔹 Étiquette atteinte :")
+                        st.markdown(
+                            f"<div class='dpe-button' style='background-color: {dpe_colors[label_reached]};'>{label_reached}</div>",
+                            unsafe_allow_html=True
+                        )
+
 
 
 if __name__ == "__main__":
