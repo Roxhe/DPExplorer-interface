@@ -58,7 +58,7 @@ def main():
     # Étape 1 : Entrée utilisateur pour le N°DPE avec bouton de validation
     if not st.session_state["n_dpe_valid"]:
         n_dpe = st.text_input(
-            "📄 Entrez votre N°DPE :",
+            "📄 Entrez votre N°DPE : (Exemple : 2494E3076086T)",
             key="n_dpe_input",
             placeholder="Exemple : 2494E3076086T"  # Ajout d'un exemple
         )
