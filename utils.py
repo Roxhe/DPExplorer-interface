@@ -177,7 +177,7 @@ def final_process(n_dpe, note_cible):
         elif final_label == "bonne":
             results.append(f"{formatted_colonne}: L'isolation nécessite des révisions pour améliorer la performance thermique.")
         elif final_label == "très bonne":
-            results.append(f"{formatted_colonne}: L'isolation doit être assiduement rénovée pour une performance optimale.")
+            results.append(f"{formatted_colonne}: L'isolation doit être assidûment rénovée pour une performance optimale.")
     ratio = (total_deperdition_m2 - deperdition_initial) / deperdition_initial
     data_converted['Besoin_chauffage'] = data_converted['Besoin_chauffage'] + data_converted['Besoin_chauffage'] * ratio
     data_converted['Besoin_ECS'] = data_converted['Besoin_ECS'] + data_converted['Besoin_ECS'] * ratio
