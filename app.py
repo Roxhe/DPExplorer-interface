@@ -45,7 +45,7 @@ st.markdown(
 # Fonction principale
 def main():
     st.title("🖌️ DPExplorer 🛠️")
-    st.write("Optimisez vos travaux pour atteindre une meilleure étiquette énergétique.")
+    st.write("Optimisez vos travaux pour atteindre une meilleure étiquette énergétique. (Valide uniquement pour les DPE établis après juillet 2021)")
 
     # Initialiser l'état pour gérer le N°DPE
     if "n_dpe_valid" not in st.session_state:
