@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import fetch_user_data
+from utils import fetch_user_data, final_process
 
 # Configuration de la page
 st.set_page_config(page_title="DPExplorer - Prioriser vos travaux", page_icon="🛠️", layout="wide")
@@ -53,6 +53,8 @@ def main():
         st.session_state["n_dpe_valid"] = False
     if "etiquette_dpe" not in st.session_state:
         st.session_state["etiquette_dpe"] = None
+    if "note_cible" not in st.session_state:
+        st.session_state["note_cible"] = None
 
     # Étape 1 : Entrée utilisateur pour le N°DPE avec bouton de validation
     if not st.session_state["n_dpe_valid"]:
@@ -72,6 +74,7 @@ def main():
                             st.session_state["n_dpe_valid"] = True
                             st.session_state["etiquette_dpe"] = etiquette_dpe
                             st.session_state["possible_labels"] = dpe_order[dpe_order.index(etiquette_dpe) + 1:]
+                            st.session_state["n_dpe"] = n_dpe
                         else:
                             st.error("⚠️ L'étiquette DPE actuelle est invalide.")
                     else:
@@ -100,13 +103,27 @@ def main():
             key="dpe_radio"
         )
 
-        # Afficher l'étiquette cible sélectionnée
+        # Stocker la note cible dans l'état de session
         if selected_label:
+            st.session_state["note_cible"] = selected_label
             st.markdown(
                 f"<div class='dpe-button' style='background-color: {dpe_colors[selected_label]};'>{selected_label}</div>",
                 unsafe_allow_html=True
             )
             st.success(f"🎯 Votre objectif est d'atteindre l'étiquette : {selected_label}")
+
+        # Afficher les valeurs stockées pour confirmation
+        st.write("**Données disponibles pour la suite :**")
+        st.write(f"- **N°DPE :** {st.session_state['n_dpe']}")
+        st.write(f"- **Note cible :** {st.session_state['note_cible']}")
+
+        # Lancer le processus final
+        if st.button("🛠️ Lancer le processus final"):
+            with st.spinner("Traitement en cours..."):
+                results = final_process(st.session_state["n_dpe"], st.session_state["note_cible"])
+                st.success("🎉 Analyse terminée ! Voici vos résultats :")
+                for result in results:
+                    st.write(f"- {result}")
 
 if __name__ == "__main__":
     main()
